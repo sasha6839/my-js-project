@@ -1,7 +1,18 @@
-.cell {
-    margin: 3px;
-    width: 70px;
-    height: 70px;
+.closed-cell {
+    background-color: rgb(169, 167, 167);
+    margin: 2px;
+    width: 35px;
+    height: 35px;
+    border-radius: 5px;
+    border: 2px solid #000;
+    box-sizing: border-box;
+    float: left;
+}
+.opened-cell {
+    background-color: rgb(255, 255, 255);
+    margin: 2px;
+    width: 35px;
+    height: 35px;
     border-radius: 5px;
     border: 2px solid #000;
     box-sizing: border-box;
@@ -10,4 +21,8 @@
 .margin {
     clear: both;
     margin-bottom: 50px;
+}
+.row-break {
+    width: 100%;
+    clear: both;
 }
