@@ -1,25 +1,64 @@
-.closed-cell {
-    background-color: rgb(169, 167, 167);
-    margin: 2px;
-    width: 35px;
-    height: 35px;
-    border-radius: 5px;
-    border: 2px solid #000;
-    box-sizing: border-box;
-    float: left;
-    text-align: center;
+.row {
+    width: fit-content;
+    clear: both;
 }
 
-.opened-cell {
-    background-color: rgb(255, 255, 255);
-    margin: 2px;
-    width: 35px;
-    height: 35px;
-    border-radius: 5px;
-    border: 2px solid #000;
+.closed-cell, .cell-0, .cell-1, .cell-2, .cell-3, .cell-4, .cell-5, .cell-6, .cell-7, .cell-8, .cell-mine, .cell-flag {
+    margin: 0px;
+    width: 40px;
+    height: 40px;
     box-sizing: border-box;
     float: left;
     text-align: center;
+    background-size: cover;
+}
+
+.closed-cell {
+    background-image: url('../img/closed_cell.png');
+}
+
+.cell-0 {
+    background-image: url('../img/0.png');
+}
+
+.cell-1 {
+    background-image: url('../img/1.png');
+}
+
+.cell-2 {
+    background-image: url('../img/2.png');
+}
+
+.cell-3 {
+    background-image: url('../img/3.png');
+}
+
+.cell-4 {
+    background-image: url('../img/4.png');
+}
+
+.cell-5 {
+    background-image: url('../img/5.png');
+}
+
+.cell-6 {
+    background-image: url('../img/6.png');
+}
+
+.cell-7 {
+    background-image: url('../img/7.png');
+}
+
+.cell-8 {
+    background-image: url('../img/8.png');
+}
+
+.cell-mine {
+    background-image: url('../img/mine_hit.png');
+}
+
+.cell-flag {
+    background-image: url('../img/flag.png');
 }
 
 .margin {
