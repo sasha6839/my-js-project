@@ -2,6 +2,8 @@ console.log('Start!')
 
 class startGame {
     constructor() {
+        this.width_field = 10;
+        this.height_field = 10;
         this.width = document.getElementById('width');
         this.height = document.getElementById('height');
         this.startGameButton = document.getElementById('startGameButton');
@@ -41,9 +43,9 @@ class FieldCreator {
     fieldCreate(width, height) {
         console.log('Creating field with width:', width, 'and height:', height);        
         let field = [];
-        for (let i = 0; i <= height; i++) {
+        for (let i = 0; i < height; i++) {
             let row = [];
-            for (let j = 0; j <= width; j++) {
+            for (let j = 0; j < width; j++) {
                 row.push({x : j + 1, y : i + 1, status : 'closed', num : 0, hasMine : false});
             }
             field.push(row);
@@ -113,6 +115,8 @@ class FieldCreator {
                     } else if (cell.num == 8) {
                         cellDiv.classList.add('cell-8');
                     }
+                } else if (cell.status === 'flaged') {
+                    cellDiv.classList.add('cell-flag');
                 }
                 rowDiv.appendChild(cellDiv);
             });
@@ -122,77 +126,85 @@ class FieldCreator {
 
 class Game {
     constructor(field) {
+        this.mode = 'openCellMode';
         console.log('game started');
         this.fieldDiv = document.querySelector('.field');
         this.cells = document.querySelectorAll('.closed-cell');
+        this.changeModeButton = document.getElementById('modeChange');
         console.log(field);
         this.initGameListeners(field);
     }
 
     initGameListeners(field) {
-        let turnCount = 0;
+        let turnCount = 0; 
+        this.changeModeButton.addEventListener('click', (e) => {
+            console.log('Change mode button clicked');
+            if (this.changeModeButton.innerText == 'Open cell mode') {
+                this.changeModeButton.innerText = 'Flag mode';
+                this.mode = 'openCellMode';
+                console.log('Mode changed to openCellMode');
+            } else if (this.changeModeButton.innerText == 'Flag mode') {
+                this.changeModeButton.innerText = 'Open cell mode';
+                this.mode = 'flagMode';
+                console.log('Mode changed to flagMode');
+            }
+        });
         this.fieldDiv.addEventListener('click', (e) => {
             console.log('Field was clicked', e.target.id);
-            if (turnCount == 0) {
-                this.mineCreator(field, e.target.id);
-                turnCount += 1;
+            if (this.mode == 'openCellMode') {
+                if (turnCount == 0) {
+                    this.mineCreator(field, e.target.id);
+                    turnCount += 1;
+                }
+                this.cells.forEach((clickedCell) => {
+                    field.forEach((row) => {
+                        row.forEach((cell) => {
+                            if ((e.target.id === clickedCell.id) && (cell.status != 'flaged') && (cell.status != 'opened')) {
+                                let x = clickedCell.id.split('-')[1];
+                                let y = clickedCell.id.split('-')[2];
+                                this.cellOpener(field, x, y);
+                            }
+                        });
+                    });
+                });
+            } else if (this.mode == 'flagMode') {
+                this.cells.forEach((clickedCell) => {
+                    if (e.target.id === clickedCell.id) {
+                        let x = clickedCell.id.split('-')[1];
+                        let y = clickedCell.id.split('-')[2];
+                        this.flagMaker(field, x, y);
+                    }
+                });
             }
-            this.cells.forEach((clickedCell) => {
-                if (e.target.id === clickedCell.id) {
-                    let k = 1
-                    let x = clickedCell.id.split('-')[1];
-                    let y = clickedCell.id.split('-')[2];
-                    this.cellOpener(field, x, y);
-                    // console.log(field);
-                    // if (field[Number(y) + 1][Number(x) + 1].num == 0) {    
-                    //     field.forEach((row) => {
-                    //         row.forEach((cell) => {
-                    //             if (cell.x == x && cell.y == y) {
-                    //                 cell.status = 'opened';
-                    //                 const fieldCreator = new FieldCreator();
-                    //                 fieldCreator.drawField(this.fieldDiv, field);
-                    //             }
-                    //         });
-                    //     });
-                    //     while (k > 0) {   
-                    //         console.log('Expanding zeros');
-                    //         this.cellZeroFinder(field);
-                    //         k = this.cellZeroFinder(field);
-                    //     }
-                        
-                    // } else {
-                    //     field.forEach((row) => {
-                    //         row.forEach((cell) => {
-                    //             if (cell.x == x && cell.y == y) {
-                    //                 cell.status = 'opened';
-                    //                 const fieldCreator = new FieldCreator();
-                    //                 fieldCreator.drawField(this.fieldDiv, field);
-                    //             }
-                    //         });
-                    //     });
-                    // }
+        });
+
+    }
+
+    flagMaker(field, x, y) {
+        console.log('Flagging cell at ', x, y);
+        field.forEach((row) => {
+            row.forEach((cell) => {
+                if (cell.x == x && cell.y == y) {
+                    if (cell.status == 'closed') {
+                        cell.status = 'flaged';
+                    } else if (cell.status == 'flaged') {
+                        cell.status = 'closed';
+                    }
+                    const fieldCreator = new FieldCreator();
+                    fieldCreator.drawField(this.fieldDiv, field);
                 }
             });
         });
     }
 
-    // cellZeroFinder(field) {
-    //     let k = 0;
-    //     field.forEach(row => {
-    //         row.forEach(cell => {
-    //             if (cell.num == 0 && cell.status == 'opened') {
-    //                 this.cellOpener(field, cell.x, cell.y);
-    //                 k += 1;
-    //             }
-    //         });
-    //     });
-    //     return k;
-    // }
-
     cellOpener(field, x, y) {
+        console.log('Opening cell at ', x, y);
         field.forEach((row, rowIndex) => {
             row.forEach((cell) => {
                 if (cell.x == x && cell.y == y) {
+                    cell.status = 'opened';
+                    const fieldCreator = new FieldCreator();
+                    fieldCreator.drawField(this.fieldDiv, field);
                     if (cell.hasMine) {
                         console.log('Game Over! You clicked on a mine at ', x, y);
                         alert('Game Over! You clicked on a mine.');
@@ -201,38 +213,82 @@ class Game {
                             if (rowIndex + 1 == rI) {
                                 r.forEach((c, cI) => {
                                     if (cell.x + 1 == c.x) {
-                                        c.status = 'opened';
-
+                                        if ((c.num == 0 && c.status == 'closed') || (c.num == 0 && c.status == 'flaged')) {
+                                            this.cellOpener(field, c.x, c.y);
+                                        } else if ((c.num > 0 && c.status == 'closed') || (c.num > 0 && c.status == 'flaged')) {
+                                            console.log('Opened cell at ', c.x, c.y);
+                                            c.status = 'opened';
+                                            fieldCreator.drawField(this.fieldDiv, field);
+                                        }
                                     } else if (cell.x - 1 == c.x) {
-                                        c.status = 'opened';
+                                        if ((c.num == 0 && c.status == 'closed') || (c.num == 0 && c.status == 'flaged')) {
+                                            this.cellOpener(field, c.x, c.y);
+                                        } else if ((c.num > 0 && c.status == 'closed') || (c.num > 0 && c.status == 'flaged')) {
+                                            console.log('Opened cell at ', c.x, c.y);
+                                            c.status = 'opened';
+                                            fieldCreator.drawField(this.fieldDiv, field);
+                                        }
                                     } else if (cell.x == c.x) {
-                                        c.status = 'opened';
+                                        if ((c.num == 0 && c.status == 'closed') || (c.num == 0 && c.status == 'flaged')) {
+                                            this.cellOpener(field, c.x, c.y);
+                                        } else if ((c.num > 0 && c.status == 'closed') || (c.num > 0 && c.status == 'flaged')) {
+                                            console.log('Opened cell at ', c.x, c.y);
+                                            c.status = 'opened';
+                                            fieldCreator.drawField(this.fieldDiv, field);
+                                        }
                                     }
                                 });
                             } else if (rowIndex == rI) {
                                 r.forEach((c, cI) => {
                                     if (cell.x + 1 == c.x) {
-                                        c.status = 'opened';
+                                        if ((c.num == 0 && c.status == 'closed') || (c.num == 0 && c.status == 'flaged')) {
+                                            this.cellOpener(field, c.x, c.y);
+                                        } else if ((c.num > 0 && c.status == 'closed') || (c.num > 0 && c.status == 'flaged')) {
+                                            console.log('Opened cell at ', c.x, c.y);
+                                            c.status = 'opened';
+                                            fieldCreator.drawField(this.fieldDiv, field);
+                                        }
                                     } else if (cell.x - 1 == c.x) {
-                                        c.status = 'opened';
+                                        if ((c.num == 0 && c.status == 'closed') || (c.num == 0 && c.status == 'flaged')) {
+                                            this.cellOpener(field, c.x, c.y);
+                                        } else if ((c.num > 0 && c.status == 'closed') || (c.num > 0 && c.status == 'flaged')) {
+                                            console.log('Opened cell at ', c.x, c.y);
+                                            c.status = 'opened';
+                                            fieldCreator.drawField(this.fieldDiv, field);
+                                        }
                                     }
                                 });
                             } else if (rowIndex - 1 == rI) {
                                 r.forEach((c, cI) => {
                                     if (cell.x + 1 == c.x) {
-                                        c.status = 'opened';
+                                        if ((c.num == 0 && c.status == 'closed') || (c.num == 0 && c.status == 'flaged')) {
+                                            this.cellOpener(field, c.x, c.y);
+                                        } else if ((c.num > 0 && c.status == 'closed') || (c.num > 0 && c.status == 'flaged')) {
+                                            console.log('Opened cell at ', c.x, c.y);
+                                            c.status = 'opened';
+                                            fieldCreator.drawField(this.fieldDiv, field);
+                                        }
                                     } else if (cell.x - 1 == c.x) {
-                                        c.status = 'opened';
+                                        if ((c.num == 0 && c.status == 'closed') || (c.num == 0 && c.status == 'flaged')) {
+                                            this.cellOpener(field, c.x, c.y);
+                                        } else if ((c.num > 0 && c.status == 'closed') || (c.num > 0 && c.status == 'flaged')) {
+                                            console.log('Opened cell at ', c.x, c.y);
+                                            c.status = 'opened';
+                                            fieldCreator.drawField(this.fieldDiv, field);
+                                        }
                                     } else if (cell.x == c.x) {
-                                        c.status = 'opened';
+                                        if ((c.num == 0 && c.status == 'closed') || (c.num == 0 && c.status == 'flaged')) {
+                                            this.cellOpener(field, c.x, c.y);
+                                        } else if ((c.num > 0 && c.status == 'closed') || (c.num > 0 && c.status == 'flaged')) {
+                                            console.log('Opened cell at ', c.x, c.y);
+                                            c.status = 'opened';
+                                            fieldCreator.drawField(this.fieldDiv, field);
+                                        }
                                     }
                                 });
                             }
                         });
                     }
-                    cell.status = 'opened';
-                    const fieldCreator = new FieldCreator();
-                    fieldCreator.drawField(this.fieldDiv, field);
                 }
             });
         });
@@ -261,7 +317,7 @@ class Game {
         const total = cells.length;
         if (total === 0) return;
 
-        const minesCount = 7
+        const minesCount = 30
 
         for (let i = cells.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));

@@ -70,3 +70,12 @@
     width: 100%;
     clear: both;
 }
+
+.hidden {
+    display: none;
+}
+
+#modeChange {
+    margin-top: 20px;
+
+}
