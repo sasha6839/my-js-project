@@ -1,40 +1,5 @@
 console.log('Start!')
 
-class startGame {
-    constructor() {
-        this.width_field = 10;
-        this.height_field = 10;
-        this.width = document.getElementById('width');
-        this.height = document.getElementById('height');
-        this.startGameButton = document.getElementById('startGameButton');
-        this.initEventListeners();
-    }
-
-    initEventListeners() {
-        let u = 0;
-        this.startGameButton.addEventListener('click', (e) => {
-            console.log('StartGameButton was clicked');
-            if (this.width_field, this.height_field > 0 && u == 0) {
-                const fieldCreator = new FieldCreator(this.width_field, this.height_field);
-                fieldCreator.fieldCreate(this.width_field, this.height_field);
-            };
-            u += 1;
-        });
-
-        this.width.addEventListener('change', (e) => {
-            this.width_field = this.width.value;
-            console.log('Width changed to:', this.width_field);
-        });
-
-        this.height.addEventListener('change', (e) => {
-            this.height_field = this.height.value;
-            console.log('Height changed to:', this.height_field);
-        });
-
-    }
-
-}
-
 class FieldCreator {
     constructor() {
         this.fieldDiv = document.querySelector('.field');
@@ -156,24 +121,27 @@ class Game {
                     this.mineCreator(field, e.target.id);
                     turnCount += 1;
                 }
-                this.cells.forEach((clickedCell) => {
-                    field.forEach((row) => {
-                        row.forEach((cell) => {
-                            if ((e.target.id === clickedCell.id) && (cell.status != 'flaged') && (cell.status != 'opened')) {
-                                let x = clickedCell.id.split('-')[1];
-                                let y = clickedCell.id.split('-')[2];
-                                this.cellOpener(field, x, y);
-                            }
-                        });
+
+                let x = e.target.id.split('-')[1];
+                let y = e.target.id.split('-')[2];
+                field.forEach((row) => {
+                    row.forEach((cell) => {
+                        if ((cell.x == x && cell.y == y && cell.status == 'closed' && cell.status != 'flaged')) {
+                            this.cellOpener(field, x, y);
+                        }
                     });
                 });
+
+
             } else if (this.mode == 'flagMode') {
-                this.cells.forEach((clickedCell) => {
-                    if (e.target.id === clickedCell.id) {
-                        let x = clickedCell.id.split('-')[1];
-                        let y = clickedCell.id.split('-')[2];
-                        this.flagMaker(field, x, y);
-                    }
+                let x = e.target.id.split('-')[1];
+                let y = e.target.id.split('-')[2];
+                field.forEach((row) => {
+                    row.forEach((cell) => {
+                        if ((cell.x == x && cell.y == y && cell.status == 'closed') || (cell.x == x && cell.y == y && cell.status == 'flaged')) {
+                            this.flagMaker(field, x, y);
+                        }
+                    });
                 });
             }
         });
@@ -208,7 +176,7 @@ class Game {
                     if (cell.hasMine) {
                         console.log('Game Over! You clicked on a mine at ', x, y);
                         alert('Game Over! You clicked on a mine.');
-                    } else if (cell.num == 0) {
+                    } else if (cell.num == 0 && cell.hasMine == false) {
                         field.forEach((r, rI) => {
                             if (rowIndex + 1 == rI) {
                                 r.forEach((c, cI) => {
@@ -314,10 +282,12 @@ class Game {
         cells.length = 0;
         eligible.forEach(c => cells.push(c));
 
-        const total = cells.length;
-        if (total === 0) return;
+    const total = cells.length;
+    if (total === 0) return;
 
-        const minesCount = 30
+    // Determine mines count: prefer server-provided value, otherwise use ~15% of cells
+    const cfgMines = (typeof window !== 'undefined' && window.GAME_CONFIG && window.GAME_CONFIG.mines) ? Number(window.GAME_CONFIG.mines) : NaN;
+    let minesCount = Number.isFinite(cfgMines) && cfgMines > 0 ? cfgMines : Math.max(1, Math.floor(total * 0.15));
 
         for (let i = cells.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -378,5 +348,12 @@ class Game {
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    new startGame();    
+    // When opened via /game, server injects GAME_CONFIG into the page.
+    const cfg = (typeof window !== 'undefined' && window.GAME_CONFIG) ? window.GAME_CONFIG : {};
+    const cols = Number(cfg.cols) || 9;   // width
+    const rows = Number(cfg.rows) || 9;   // height
+
+    // Initialize field using server-provided config (or defaults)
+    const fieldCreator = new FieldCreator();
+    fieldCreator.fieldCreate(cols, rows);
 });

@@ -1,16 +1,38 @@
-.row {
-    width: fit-content;
-    clear: both;
+:root{
+    --cell-size: 40px;
 }
 
+.row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: var(--cell-gap);
+    align-items: center;
+}
+
+/* Base cell style used for all cell variants. Keeps existing background-image classes below. */
 .closed-cell, .cell-0, .cell-1, .cell-2, .cell-3, .cell-4, .cell-5, .cell-6, .cell-7, .cell-8, .cell-mine, .cell-flag {
-    margin: 0px;
-    width: 40px;
-    height: 40px;
+    margin: 0;
+    width: var(--cell-size);
+    height: var(--cell-size);
     box-sizing: border-box;
-    float: left;
-    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--cell-radius);
     background-size: cover;
+    background-position: center;
+    text-align: center;
+    user-select: none;
+    cursor: pointer;
+    transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+}
+
+/* Visual "glass" / card look for closed cells */
+.closed-cell {
+    background-image: url('../img/closed_cell.png');
+    background-color: var(--cell-bg);
+    border: 1px solid var(--cell-border);
+    box-shadow: var(--cell-shadow);
 }
 
 .closed-cell {
@@ -61,6 +83,24 @@
     background-image: url('../img/flag.png');
 }
 
+.closed-cell:hover {
+    transform: translateY(-1px);
+}
+
+
+
+.cell.opened, .cell-0, .cell-1, .cell-2, .cell-3, .cell-4, .cell-5, .cell-6, .cell-7, .cell-8 {
+    cursor: default;
+    transform: none;
+    box-shadow: none;
+
+}
+
+.cell.active {
+    outline: 2px solid rgba(245,158,11,0.14);
+    box-shadow: 0 8px 22px rgba(245,158,11,0.08);
+}
+
 .margin {
     clear: both;
     margin-bottom: 50px;
@@ -75,7 +115,3 @@
     display: none;
 }
 
-#modeChange {
-    margin-top: 20px;
-
-}
